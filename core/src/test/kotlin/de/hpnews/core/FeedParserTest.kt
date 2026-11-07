@@ -88,4 +88,20 @@ class FeedParserTest {
         val b = a.copy(id = "2", link = "https://b.de/y", title = "HBO – neue Serie")
         assertEquals(1, NewsRepository.dedupe(listOf(a, b)).size)
     }
+
+    @Test
+    fun emmaWatsonTopics() {
+        val rss = """<rss><channel>
+            <item><title>Emma Watson spricht über neues Buchprojekt - Spiegel</title><link>https://news.google.com/rss/articles/abc</link><source>Spiegel</source></item>
+            <item><title>Interview mit der Schauspielerin - Zeit</title><link>https://news.google.com/rss/articles/def</link><source>Zeit</source></item>
+            </channel></rss>"""
+        val src = Source("Emma", "x", Lang.DE, isAggregator = true, isEmmaWatsonSearch = true)
+        val items = FeedParser.parse(rss, src)
+        assertEquals(2, items.size)
+        assertTrue(items.all { it.isEmmaWatson && !it.isHarryPotter })
+        assertEquals("Emma Watson spricht über neues Buchprojekt", items[0].title)
+
+        val hp = FeedParser.parse(bingRss, Source("Bing DE", "x", Lang.DE, isAggregator = true)).single()
+        assertTrue(hp.isHarryPotter && !hp.isEmmaWatson)
+    }
 }

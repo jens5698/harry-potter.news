@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-enum class Filter(val label: String) { ALL("Alle"), HBO("HBO-Serie"), GERMAN("Deutsch"), ENGLISH("Englisch") }
+enum class Filter(val label: String) { ALL("Alle"), HBO("HBO-Serie"), GERMAN("Deutsch"), ENGLISH("Englisch"), EMMA("Emma Watson") }
 
 data class ListState(
     val loading: Boolean = false,
@@ -30,11 +30,15 @@ data class ListState(
     val filter: Filter = Filter.ALL,
 ) {
     val visible: List<NewsItem>
-        get() = when (filter) {
-            Filter.ALL -> items
-            Filter.HBO -> items.filter { it.isHboSeries }
-            Filter.GERMAN -> items.filter { it.language == Lang.DE }
-            Filter.ENGLISH -> items.filter { it.language != Lang.DE }
+        get() {
+            val hp = items.filter { it.isHarryPotter }
+            return when (filter) {
+                Filter.ALL -> hp
+                Filter.HBO -> hp.filter { it.isHboSeries }
+                Filter.GERMAN -> hp.filter { it.language == Lang.DE }
+                Filter.ENGLISH -> hp.filter { it.language != Lang.DE }
+                Filter.EMMA -> items.filter { it.isEmmaWatson }
+            }
         }
 }
 

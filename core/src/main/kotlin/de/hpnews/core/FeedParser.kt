@@ -55,8 +55,11 @@ object FeedParser {
         val language = source.language ?: LanguageDetector.detect("$title $teaser")
         val topicText = "$title $teaser"
 
-        // Suchen und allgemeine Film-/Serienseiten: nur echte HP-Themen behalten.
-        if (source.filterTopic && !Sources.isOnTopic(topicText)) return null
+        val isHp = !source.isEmmaWatsonSearch && (!source.filterTopic || Sources.isOnTopic(topicText)) ||
+            source.isEmmaWatsonSearch && Sources.isOnTopic(topicText)
+        val isEmma = source.isEmmaWatsonSearch || Sources.mentionsEmmaWatson(topicText)
+        // Suchen und allgemeine Film-/Serienseiten: nur passende Themen behalten.
+        if (!isHp && !isEmma) return null
 
         return NewsItem(
             id = sha1(link),
@@ -68,7 +71,9 @@ object FeedParser {
             teaser = teaser,
             feedContentHtml = content,
             language = language,
-            isHboSeries = Sources.looksLikeHboSeries(topicText + " " + (content?.let { htmlToText(it).take(2000) } ?: "")),
+            isHarryPotter = isHp,
+            isEmmaWatson = isEmma,
+            isHboSeries = isHp && Sources.looksLikeHboSeries(topicText + " " + (content?.let { htmlToText(it).take(2000) } ?: "")),
         )
     }
 

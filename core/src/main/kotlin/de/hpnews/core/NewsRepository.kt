@@ -45,7 +45,16 @@ class NewsRepository(
             for (item in items.sortedBy { if (it.feedContentHtml != null) 0 else 1 }) {
                 val linkKey = item.link.substringBefore('?').trimEnd('/')
                 val titleKey = normalizeTitle(item.title)
-                if (!seenLinks.add(linkKey) || !seenTitles.add(titleKey)) continue
+                if (!seenLinks.add(linkKey) || !seenTitles.add(titleKey)) {
+                    // Dublette: Themen zusammenführen (z. B. HP-Artikel, der auch in der Emma-Suche auftaucht)
+                    val i = out.indexOfFirst { it.link.substringBefore('?').trimEnd('/') == linkKey || normalizeTitle(it.title) == titleKey }
+                    if (i >= 0) out[i] = out[i].copy(
+                        isHarryPotter = out[i].isHarryPotter || item.isHarryPotter,
+                        isEmmaWatson = out[i].isEmmaWatson || item.isEmmaWatson,
+                        isHboSeries = out[i].isHboSeries || item.isHboSeries,
+                    )
+                    continue
+                }
                 out += item
             }
             return out.sortedByDescending { it.published ?: Instant.EPOCH }

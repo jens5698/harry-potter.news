@@ -20,6 +20,9 @@ object Sources {
         Source("Google News (EN)", googleNews("\"Harry Potter\"", "en-US", "US"), Lang.EN, isAggregator = true),
         Source("Google News (EN): HBO series", googleNews("\"Harry Potter\" HBO series", "en-US", "US"), Lang.EN, isAggregator = true),
         Source("MuggleNet", "https://www.mugglenet.com/feed/", Lang.EN),
+        // Emma Watson
+        Source("Google News (DE): Emma Watson", googleNews("\"Emma Watson\"", "de", "DE"), Lang.DE, isAggregator = true, isEmmaWatsonSearch = true),
+        Source("Google News (EN): Emma Watson", googleNews("\"Emma Watson\"", "en-US", "US"), Lang.EN, isAggregator = true, isEmmaWatsonSearch = true),
     )
 
     /** Zusätzliche Kandidaten, die nur die Diagnose prüft. */
@@ -32,4 +35,8 @@ object Sources {
     private val topicPattern = Regex("""Harry[- ]Potter|Hogwarts|Wizarding World|Dumbledore|Voldemort|Hermine|Hermione|Phantastische Tierwesen|Fantastic Beasts|J\.? ?K\.? Rowling""", RegexOption.IGNORE_CASE)
 
     fun isOnTopic(text: String): Boolean = topicPattern.containsMatchIn(text)
+
+    private val emmaPattern = Regex("""Emma Watson""", RegexOption.IGNORE_CASE)
+
+    fun mentionsEmmaWatson(text: String): Boolean = emmaPattern.containsMatchIn(text)
 }

@@ -14,6 +14,8 @@ data class Source(
     val isAggregator: Boolean = false,
     /** true = nur Einträge behalten, die wirklich mit Harry Potter zu tun haben. */
     val filterTopic: Boolean = isAggregator,
+    /** Suchfeed zu Emma Watson: alle Treffer gehören automatisch in den Emma-Watson-Tab. */
+    val isEmmaWatsonSearch: Boolean = false,
 )
 
 /** Ein Eintrag aus einem Feed. */
@@ -31,6 +33,8 @@ data class NewsItem(
     val feedContentHtml: String?,
     val language: Lang,
     val isHboSeries: Boolean,
+    val isHarryPotter: Boolean = true,
+    val isEmmaWatson: Boolean = false,
 )
 
 /** Der lesbare Text eines Artikels. */

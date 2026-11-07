@@ -62,7 +62,7 @@ class Simplifier(
 
         private val SYSTEM_PROMPT = """
             You help a German-speaking reader practise English with news about Harry Potter
-            (books, films, games, theme parks and the HBO TV series).
+            (books, films, games, theme parks, the HBO TV series) and about actors such as Emma Watson.
 
             You get one news article. It can be in any language. Rewrite it in simple English
             for a learner at about level A2 to B1:
