@@ -3,30 +3,10 @@ package de.hpnews.core
 import com.anthropic.client.AnthropicClient
 import com.anthropic.client.okhttp.AnthropicOkHttpClient
 import com.anthropic.core.JsonValue
+import com.anthropic.models.messages.JsonOutputFormat
 import com.anthropic.models.messages.MessageCreateParams
 import com.anthropic.models.messages.OutputConfig
 import com.anthropic.models.messages.StopReason
-import com.fasterxml.jackson.annotation.JsonPropertyDescription
-
-/** Schema für die strukturierte Antwort (wird vom SDK in ein JSON-Schema übersetzt). */
-class SimplifiedSchema {
-    @JsonPropertyDescription("The headline rewritten in simple English")
-    lateinit var title: String
-
-    @JsonPropertyDescription("The article rewritten in simple English, one paragraph per entry")
-    lateinit var paragraphs: List<String>
-
-    @JsonPropertyDescription("Words or phrases from the simple text that may still be hard for a learner, with German translation")
-    lateinit var vocabulary: List<VocabSchema>
-}
-
-class VocabSchema {
-    @JsonPropertyDescription("The English word or phrase exactly as it appears in the simple text")
-    lateinit var english: String
-
-    @JsonPropertyDescription("German translation, fitting the meaning in this text")
-    lateinit var german: String
-}
 
 class SimplifyException(message: String) : Exception(message)
 
@@ -41,6 +21,44 @@ class Simplifier(
     companion object {
         const val DEFAULT_MODEL = "claude-opus-5-5"
         const val CHEAP_MODEL = "claude-haiku-5-5"
+
+        /**
+         * JSON-Schema der Antwort, von Hand geschrieben. (Die automatische Ableitung aus
+         * einer Klasse nutzt Java-Reflection, die es auf Android nicht gibt.)
+         */
+        internal val OUTPUT_FORMAT: JsonOutputFormat by lazy {
+            fun str(desc: String) = mapOf("type" to "string", "description" to desc)
+            val vocabItem = mapOf(
+                "type" to "object",
+                "properties" to mapOf(
+                    "english" to str("The English word or phrase exactly as it appears in the simple text"),
+                    "german" to str("German translation, fitting the meaning in this text"),
+                ),
+                "required" to listOf("english", "german"),
+                "additionalProperties" to false,
+            )
+            val schema = mapOf(
+                "type" to "object",
+                "properties" to mapOf(
+                    "title" to str("The headline rewritten in simple English"),
+                    "paragraphs" to mapOf(
+                        "type" to "array",
+                        "description" to "The article rewritten in simple English, one paragraph per entry",
+                        "items" to mapOf("type" to "string"),
+                    ),
+                    "vocabulary" to mapOf(
+                        "type" to "array",
+                        "description" to "Words or phrases from the simple text that may still be hard for a learner, with German translation",
+                        "items" to vocabItem,
+                    ),
+                ),
+                "required" to listOf("title", "paragraphs", "vocabulary"),
+                "additionalProperties" to false,
+            )
+            val schemaBuilder = JsonOutputFormat.Schema.builder()
+            schema.forEach { (k, v) -> schemaBuilder.putAdditionalProperty(k, JsonValue.from(v)) }
+            JsonOutputFormat.builder().schema(schemaBuilder.build()).build()
+        }
 
         private val SYSTEM_PROMPT = """
             You help a German-speaking reader practise English with news about Harry Potter
@@ -79,7 +97,7 @@ class Simplifier(
             .model(model)
             .maxTokens(16000L)
             .system(SYSTEM_PROMPT)
-            .outputConfig(SimplifiedSchema::class.java)
+            .outputConfig(OutputConfig.builder().format(OUTPUT_FORMAT).build())
             .addUserMessage(userMessage)
         if (model.startsWith("claude-opus") || model.startsWith("claude-fable")) {
             // Falls die KI eine Anfrage fälschlich ablehnt, versucht der Server automatisch ein anderes Modell.
@@ -94,16 +112,16 @@ class Simplifier(
             throw SimplifyException("Die KI hat diesen Artikel nicht verarbeitet.")
         }
 
-        val result = response.content().stream()
+        val json = response.content().stream()
             .flatMap { it.text().stream() }
             .map { it.text() }
             .findFirst()
             .orElseThrow { SimplifyException("Leere Antwort der KI.") }
 
-        return SimplifiedArticle(
-            title = result.title,
-            paragraphs = result.paragraphs.filter { it.isNotBlank() },
-            vocabulary = result.vocabulary.map { VocabEntry(it.english, it.german) },
-        )
+        return try {
+            SimplifiedJson.parse(json)
+        } catch (e: Exception) {
+            throw SimplifyException("Antwort der KI war unvollständig.")
+        }
     }
 }

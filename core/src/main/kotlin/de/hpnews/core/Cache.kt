@@ -1,13 +1,9 @@
 package de.hpnews.core
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
 /** Speichert Übersetzungen, damit jeder Artikel nur einmal an die KI geht (spart Kosten). */
 class SimplifiedCache(private val dir: File) {
-    private val mapper = jacksonObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
 
     init { dir.mkdirs() }
 
@@ -16,10 +12,10 @@ class SimplifiedCache(private val dir: File) {
     fun get(id: String, model: String): SimplifiedArticle? {
         val f = file(id, model)
         if (!f.exists()) return null
-        return runCatching { mapper.readValue<SimplifiedArticle>(f) }.getOrNull()
+        return runCatching { SimplifiedJson.parse(f.readText()) }.getOrNull()
     }
 
     fun put(id: String, model: String, article: SimplifiedArticle) {
-        mapper.writeValue(file(id, model), article)
+        file(id, model).writeText(SimplifiedJson.toJson(article))
     }
 }

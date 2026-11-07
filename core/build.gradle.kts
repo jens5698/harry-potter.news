@@ -15,7 +15,7 @@ dependencies {
     api("com.anthropic:anthropic-java:3.6.0")
     api("org.jsoup:jsoup:1.18.3")
     api("com.squareup.okhttp3:okhttp:4.12.0")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
+    api("com.fasterxml.jackson.core:jackson-databind:2.18.2")
 
     testImplementation(kotlin("test"))
 }
