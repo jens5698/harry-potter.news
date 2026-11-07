@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.HPNews" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#FF5C0F14</item>
+        <item name="android:windowBackground">#FF1B1416</item>
+    </style>
+</resources>
