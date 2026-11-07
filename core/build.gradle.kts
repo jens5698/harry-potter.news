@@ -21,3 +21,10 @@ dependencies {
 }
 
 tasks.test { useJUnitPlatform() }
+
+tasks.register<JavaExec>("checkFeeds") {
+    group = "verification"
+    description = "Prüft alle Nachrichtenquellen und zeigt, was ankommt."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("de.hpnews.core.FeedCheckKt")
+}

@@ -22,6 +22,21 @@ object Sources {
         Source("The Leaky Cauldron", "https://www.the-leaky-cauldron.org/feed/", Lang.EN),
     )
 
+    /** Kandidaten, die nur von der Diagnose geprüft werden. */
+    val candidates: List<Source> = listOf(
+        Source("Google News (DE)", "https://news.google.com/rss/search?q=%22Harry+Potter%22&hl=de&gl=DE&ceid=DE:de", Lang.DE, isAggregator = true),
+        Source("Bing (DE, einfach)", "https://www.bing.com/news/search?q=Harry+Potter&format=rss&mkt=de-DE", Lang.DE, isAggregator = true),
+        Source("Filmstarts", "https://www.filmstarts.de/rss/nachrichten.xml", Lang.DE, isAggregator = false),
+        Source("Moviepilot", "https://www.moviepilot.de/rss/news", Lang.DE),
+        Source("Serienjunkies", "https://www.serienjunkies.de/rss/news.xml", Lang.DE),
+        Source("Quotenmeter", "https://www.quotenmeter.de/rss/quotenmeter.xml", Lang.DE),
+        Source("Harry-Potter-Xperts", "https://www.harrypotter-xperts.de/feed", Lang.DE),
+        Source("HP-FC", "https://www.hp-fc.de/feed/", Lang.DE),
+        Source("Wizarding World", "https://www.wizardingworld.com/rss", Lang.EN),
+        Source("Leaky (ohne www)", "https://the-leaky-cauldron.org/feed/", Lang.EN),
+        Source("HypeableHP", "https://www.hypable.com/harry-potter/feed/", Lang.EN),
+    )
+
     private val hboPattern = Regex("""\bHBO\b|\bMax\b.*(serie|series)|(serie|series).*\bMax\b|TV[- ]?(serie|series)|Fernsehserie|Paapa Essiedu|Dominic McLaughlin|John Lithgow|Arabella Stanton|Alastair Stout""", RegexOption.IGNORE_CASE)
 
     fun looksLikeHboSeries(text: String): Boolean = hboPattern.containsMatchIn(text)

@@ -1,0 +1,20 @@
+name: Quellen prüfen
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "core/src/main/kotlin/de/hpnews/core/Sources.kt"
+      - "core/src/main/kotlin/de/hpnews/core/FeedCheck.kt"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew -PcoreOnly :core:checkFeeds --console=plain
