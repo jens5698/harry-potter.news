@@ -1,4 +1,4 @@
-# HP News – Harry-Potter-Nachrichten für Android
+# Harry Potter News – Nachrichten-App für Android
 
 Zeigt aktuelle Nachrichten rund um Harry Potter (inkl. der HBO-Serie).
 
