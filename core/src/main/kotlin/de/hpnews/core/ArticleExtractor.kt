@@ -15,7 +15,8 @@ class ArticleExtractor(private val http: Http = Http()) {
         if (fromFeed.joinToString(" ").length >= 600) return ArticleText(fromFeed, isComplete = true)
 
         val fromPage = runCatching {
-            val (finalUrl, html) = http.get(item.link)
+            val url = if (GoogleNewsLinks.isGoogleNews(item.link)) GoogleNewsLinks.resolve(item.link) ?: item.link else item.link
+            val (finalUrl, html) = http.get(url)
             extract(Jsoup.parse(html, finalUrl))
         }.getOrDefault(emptyList())
 

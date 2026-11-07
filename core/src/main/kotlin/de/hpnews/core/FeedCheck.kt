@@ -19,7 +19,13 @@ fun main() {
             val items = FeedParser.parse(body, src)
             println("    final=$finalUrl bytes=${body.length} rohEinträge=$raw nachFilter=${items.size}")
             if (raw == 0) println("    Anfang: " + body.take(300).replace(Regex("\\s+"), " "))
-            items.take(3).forEach { println("    - [${it.publisher}] ${it.title} -> ${it.link}") }
+            items.take(3).forEach { println("    - [${it.publisher}] ${it.title} -> ${it.link.take(90)}") }
+            // Volltext für die ersten zwei Einträge testen
+            items.take(2).forEach { item ->
+                val resolved = if (GoogleNewsLinks.isGoogleNews(item.link)) runCatching { GoogleNewsLinks.resolve(item.link) }.getOrElse { "FEHLER ${it.message}" } else item.link
+                val text = runCatching { ArticleExtractor(http).load(item) }.getOrNull()
+                println("      Link: $resolved | Text: ${text?.paragraphs?.joinToString(" ")?.length ?: 0} Zeichen, vollständig=${text?.isComplete}")
+            }
         } catch (e: Exception) {
             println("    FEHLER: ${e.message ?: e}")
         }

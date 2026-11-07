@@ -30,7 +30,7 @@ object FeedParser {
     }
 
     private fun parseEntry(e: Element, source: Source): NewsItem? {
-        val title = e.childText("title")?.let { htmlToText(it) } ?: return null
+        var title = e.childText("title")?.let { htmlToText(it) } ?: return null
         val rawLink = e.childText("link")
             ?: e.children().firstOrNull { it.tagName() == "link" }?.attr("href")?.takeIf { it.isNotBlank() }
             ?: return null
@@ -38,19 +38,25 @@ object FeedParser {
 
         val description = e.childText("description", "summary") ?: ""
         val content = e.childText("content:encoded", "content")
-        val teaser = htmlToText(description).take(600)
+        var teaser = htmlToText(description).take(600)
 
         val publisher = if (source.isAggregator) {
             e.childText("News:Source", "news:source", "source") ?: hostOf(link)
         } else source.name
+
+        if (source.isAggregator) {
+            // Google News hängt " - Herausgeber" an den Titel und wiederholt ihn als Beschreibung.
+            title = title.removeSuffix(" - $publisher").trim()
+            if (teaser.startsWith(title) || teaser.removeSuffix(publisher).trim() == title) teaser = ""
+        }
 
         val published = e.childText("pubDate", "published", "updated", "dc:date")?.let { parseDate(it) }
 
         val language = source.language ?: LanguageDetector.detect("$title $teaser")
         val topicText = "$title $teaser"
 
-        // Aggregator-Suchen liefern manchmal Randtreffer – nur echte HP-Themen behalten.
-        if (source.isAggregator && !Sources.isOnTopic(topicText)) return null
+        // Suchen und allgemeine Film-/Serienseiten: nur echte HP-Themen behalten.
+        if (source.filterTopic && !Sources.isOnTopic(topicText)) return null
 
         return NewsItem(
             id = sha1(link),

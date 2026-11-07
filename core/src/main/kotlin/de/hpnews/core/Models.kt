@@ -12,6 +12,8 @@ data class Source(
     val language: Lang? = null,
     /** Bei Suchfeeds (Bing News) steht der echte Herausgeber in jedem Eintrag. */
     val isAggregator: Boolean = false,
+    /** true = nur Einträge behalten, die wirklich mit Harry Potter zu tun haben. */
+    val filterTopic: Boolean = isAggregator,
 )
 
 /** Ein Eintrag aus einem Feed. */
