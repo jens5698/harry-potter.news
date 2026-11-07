@@ -14,16 +14,21 @@ class ArticleExtractor(private val http: Http = Http()) {
         val fromFeed = item.feedContentHtml?.let { paragraphsFromHtml(it) }.orEmpty()
         if (fromFeed.joinToString(" ").length >= 600) return ArticleText(fromFeed, isComplete = true)
 
+        var resolved: String? = null
         val fromPage = runCatching {
-            val url = if (GoogleNewsLinks.isGoogleNews(item.link)) GoogleNewsLinks.resolve(item.link) ?: item.link else item.link
+            val url = if (GoogleNewsLinks.isGoogleNews(item.link)) {
+                runCatching { GoogleNewsLinks.resolve(item.link) }.getOrNull() ?: item.link
+            } else item.link
             val (finalUrl, html) = http.get(url)
+            if (!GoogleNewsLinks.isGoogleNews(finalUrl)) resolved = finalUrl
             extract(Jsoup.parse(html, finalUrl))
         }.getOrDefault(emptyList())
 
-        if (fromPage.joinToString(" ").length >= 400) return ArticleText(fromPage, isComplete = true)
+        if (fromPage.joinToString(" ").length >= 400) return ArticleText(fromPage, isComplete = true, resolvedUrl = resolved)
 
         val fallback = fromFeed.ifEmpty { listOf(item.teaser).filter { it.isNotBlank() } }
-        return ArticleText(fallback, isComplete = false)
+            .ifEmpty { listOf(item.title) }
+        return ArticleText(fallback, isComplete = false, resolvedUrl = resolved)
     }
 
     fun paragraphsFromHtml(html: String): List<String> {

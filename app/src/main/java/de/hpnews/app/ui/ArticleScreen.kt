@@ -51,6 +51,7 @@ import de.hpnews.core.VocabEntry
 fun ArticleScreen(state: ArticleState, onBack: () -> Unit, onRetry: () -> Unit) {
     val item = state.item
     val uri = LocalUriHandler.current
+    val link = state.original?.resolvedUrl ?: item.link
     // Tab 0 = einfaches Englisch, Tab 1 = Original
     var tab by remember(item.id) { mutableIntStateOf(0) }
 
@@ -73,11 +74,11 @@ fun ArticleScreen(state: ArticleState, onBack: () -> Unit, onRetry: () -> Unit) 
                 Column(Modifier.padding(12.dp).fillMaxWidth()) {
                     Text("Quelle: ${item.publisher}", fontWeight = FontWeight.SemiBold)
                     Text(formatDate(item.published), style = MaterialTheme.typography.bodySmall)
-                    Text(item.link, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
+                    Text(link, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
                     if (item.foundVia != item.publisher) {
                         Text("Gefunden über: ${item.foundVia}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    TextButton(onClick = { uri.openUri(item.link) }) { Text("Original-Artikel öffnen") }
+                    TextButton(onClick = { uri.openUri(link) }) { Text("Original-Artikel öffnen") }
                 }
             }
             Spacer(Modifier.height(12.dp))

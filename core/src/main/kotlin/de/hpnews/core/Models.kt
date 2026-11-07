@@ -38,6 +38,8 @@ data class ArticleText(
     val paragraphs: List<String>,
     /** false, wenn nur ein Anriss verfügbar war (z. B. Paywall oder Seite nicht lesbar). */
     val isComplete: Boolean,
+    /** Echte Adresse des Artikels (bei Google-News-Links aufgelöst), falls bekannt. */
+    val resolvedUrl: String? = null,
 )
 
 data class VocabEntry(
